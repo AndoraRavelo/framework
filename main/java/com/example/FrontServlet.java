@@ -13,11 +13,9 @@ public class FrontServlet extends HttpServlet {
         String fullUrl = request.getRequestURL().toString();
         String uri = request.getRequestURI();
 
-        // Affichage en console
         System.out.println("URL tapée (console) : " + fullUrl);
         System.out.println("URI : " + uri);
 
-        // Affichage sur la page web
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
         out.println("<html><body>");
