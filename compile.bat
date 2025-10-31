@@ -35,7 +35,7 @@ if not exist sources.txt (
     echo Error: No Java source files found in "%FRAMEWORK_SRC%"
     exit /b 1
 )
-javac -cp "%CLASSPATH%" -d "%CLASSES_DIR%" @sources.txt
+javac -encoding UTF-8 -cp "%CLASSPATH%" -d "%CLASSES_DIR%" @sources.txt
 if errorlevel 1 (
     echo Compilation error
     del sources.txt
