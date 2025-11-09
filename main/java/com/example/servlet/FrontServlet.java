@@ -1,4 +1,4 @@
-package com.example;
+package com.example.servlet;
 
 import jakarta.servlet.http.*;
 import jakarta.servlet.RequestDispatcher;
@@ -78,7 +78,7 @@ public class FrontServlet extends HttpServlet {
                     }
                 } else {
                     System.out.println("[Routing] Resource not found: " + absolute);
-                }
+        }
             }
         } else {
             // Ajoute extension
@@ -90,7 +90,7 @@ public class FrontServlet extends HttpServlet {
                     if (getServletContext().getResource(absolute) != null) {
                         System.out.println("[Routing] Resource found: " + absolute);
                         if (dispatchTo(request, response, absolute)) {
-                            return true;
+                        return true;
                         }
                     } else {
                         System.out.println("[Routing] Resource not found: " + absolute);
