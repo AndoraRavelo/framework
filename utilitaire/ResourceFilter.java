@@ -1,4 +1,4 @@
-package framework.utilitaire;
+package utilitaire;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;

@@ -65,6 +65,6 @@ if errorlevel 1 (
 echo Compilation réussie!
 echo.
 echo Pour tester les annotations:
-echo java -cp "build\classes" testFramework.com.testframework.Main
+echo java -cp "build\classes" testcom.testMain
 echo.
 pause

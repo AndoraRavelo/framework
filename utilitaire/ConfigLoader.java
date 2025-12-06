@@ -1,4 +1,4 @@
-package framework.utilitaire;
+package utilitaire;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
