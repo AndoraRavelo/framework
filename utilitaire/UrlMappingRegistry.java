@@ -1,6 +1,6 @@
-package utilitaire;
+package framework.utilitaire;
 
-import annotation.GetMapping;
+import framework.annotation.GetMapping;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -22,33 +22,46 @@ public class UrlMappingRegistry {
     }
     
     /**
-     * Construit le registre des URLs à partir des classes scannées
-     * @param classes Liste des classes avec @Controller
+     * Construit le registre des mappings URL à partir des classes scannées
+     * @param controllerClasses Liste des classes décorées avec @Controller
      */
-    public void buildRegistry(List<Class<?>> classes) {
+    public void buildRegistry(List<Class<?>> controllerClasses) {
         if (initialized) {
-            System.out.println("Registre déjà initialisé.");
+            System.out.println("[REGISTRY] Le registre est déjà initialisé - opération ignorée");
             return;
         }
         
+        // Nettoyage préalable du registre
         urlMappings.clear();
-        int urlCount = 0;
+        int mappingsCount = 0;
         
-        for (Class<?> clazz : classes) {
-            Method[] methods = clazz.getDeclaredMethods();
+        System.out.println("[REGISTRY] Début de la construction du registre d'URLs...");
+        
+        // Parcours de toutes les classes contrôleurs
+        for (Class<?> controllerClass : controllerClasses) {
+            Method[] declaredMethods = controllerClass.getDeclaredMethods();
             
-            for (Method method : methods) {
+            // Analyse de chaque méthode pour trouver les annotations @GetMapping
+            for (Method method : declaredMethods) {
                 if (method.isAnnotationPresent(GetMapping.class)) {
-                    GetMapping mapping = method.getAnnotation(GetMapping.class);
-                    String url = mapping.value();
-                    urlMappings.put(url, new MappingInfo(clazz, method, url));
-                    urlCount++;
+                    GetMapping mappingAnnotation = method.getAnnotation(GetMapping.class);
+                    String mappedUrl = mappingAnnotation.value();
+                    
+                    // Création et enregistrement du mapping
+                    MappingInfo mappingInfo = new MappingInfo(controllerClass, method, mappedUrl);
+                    urlMappings.put(mappedUrl, mappingInfo);
+                    mappingsCount++;
+                    
+                    System.out.println("[REGISTRY] URL mappée: " + mappedUrl + 
+                            " -> " + controllerClass.getSimpleName() + "." + method.getName() + "()");
                 }
             }
         }
         
+        // Finalisation de l'initialisation
         initialized = true;
-        System.out.println("Registre construit: " + urlCount + " URL(s) mappée(s).\n");
+        System.out.println("[REGISTRY] Construction terminée: " + mappingsCount + 
+                " mapping(s) enregistré(s) avec succès.\n");
     }
     
     /**

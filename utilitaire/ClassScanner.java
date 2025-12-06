@@ -1,6 +1,6 @@
-package utilitaire;
+package framework.utilitaire;
 
-import annotation.Controller;
+import framework.annotation.Controller;
 
 import java.io.File;
 import java.net.URL;
@@ -62,17 +62,26 @@ public class ClassScanner {
             } else if (file.isFile() && file.getName().endsWith(".class")) {
                 // Charger la classe
                 String className = file.getName().substring(0, file.getName().length() - 6);
-                try {
-                    Class<?> clazz = Class.forName(packageName + "." + className);
-                    // Filtrer uniquement les classes avec @Controller
-                    if (clazz.isAnnotationPresent(Controller.class)) {
-                        classes.add(clazz);
-                    }
-                } catch (ClassNotFoundException e) {
-                    System.out.println("Impossible de charger la classe: " + packageName + "." + className);
-                } catch (NoClassDefFoundError e) {
-                    // Ignorer les erreurs de classes internes ou dépendances manquantes
-                }
+    /**
+     * Recherche une classe par son nom complet dans le classpath
+     * @param className Le nom complet de la classe à charger
+     * @return La classe chargée ou null si introuvable
+     */
+    private Class<?> loadClassByName(String className) {
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException classNotFound) {
+            System.out.println("[SCANNER] Classe non trouvée: " + className);
+            return null;
+        } catch (NoClassDefFoundError classDefError) {
+            // Ignorer les erreurs liées aux classes internes ou dépendances manquantes
+            System.out.println("[SCANNER] Dépendance manquante pour: " + className);
+            return null;
+        } catch (SecurityException securityException) {
+            System.out.println("[SCANNER] Erreur de sécurité lors du chargement: " + className);
+            return null;
+        }
+    }
             }
         }
     }

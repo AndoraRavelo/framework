@@ -1,4 +1,4 @@
-package utilitaire;
+package framework.utilitaire;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -15,19 +15,30 @@ import java.util.List;
 public class MethodInvoker {
 
     /**
-     * Execute an instance method by name.
+     * Exécute une méthode d'instance par réflexion
+     * @param target L'objet cible
+     * @param methodName Le nom de la méthode
+     * @param paramTypes Les types des paramètres
+     * @param args Les arguments
+     * @return Le résultat de l'invocation
      */
     public static Object execute(Object target, String methodName, Class<?>[] paramTypes, Object[] args) {
-        if (target == null) throw new IllegalArgumentException("target is null");
+        if (target == null) {
+            throw new IllegalArgumentException("La cible ne peut pas être nulle");
+        }
+        
         try {
-            Method m = findMethod(target.getClass(), methodName, paramTypes);
-            if (!m.isAccessible()) m.setAccessible(true);
-            return m.invoke(target, args);
-        } catch (RuntimeException re) {
-            throw re;
-        } catch (Throwable t) {
-            throw new RuntimeException("Failed to invoke method '" + methodName + "' on "
-                    + target.getClass().getName() + ": " + t.getMessage(), t);
+            Method method = findMethod(target.getClass(), methodName, paramTypes);
+            if (!method.isAccessible()) {
+                method.setAccessible(true);
+            }
+            return method.invoke(target, args);
+        } catch (RuntimeException runtimeEx) {
+            // Propager les exceptions runtime sans modification
+            throw runtimeEx;
+        } catch (Throwable throwable) {
+            throw new RuntimeException("Échec de l'invocation de la méthode '" + methodName + 
+                    "' sur la classe " + target.getClass().getName() + ": " + throwable.getMessage(), throwable);
         }
     }
 

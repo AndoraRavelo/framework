@@ -1,4 +1,4 @@
-package utilitaire;
+package framework.utilitaire;
 
 import java.util.Collections;
 import java.util.HashMap;

@@ -1,16 +1,16 @@
-package servlet;
+package framework.servlet;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
-import annotation.AnnotationReader;
-import annotation.RequestParam;
-import utilitaire.MappingInfo;
-import utilitaire.ConfigLoader;
-import utilitaire.MethodInvoker;
-import utilitaire.ModelAndView;
+import framework.annotation.AnnotationReader;
+import framework.annotation.RequestParam;
+import framework.utilitaire.MappingInfo;
+import framework.utilitaire.ConfigLoader;
+import framework.utilitaire.MethodInvoker;
+import framework.utilitaire.ModelAndView;
 
 public class FrontServlet extends HttpServlet {
 
@@ -203,16 +203,46 @@ public class FrontServlet extends HttpServlet {
         out.println("</body></html>");
     }
 
-    private Object convertSimple(String raw, Class<?> type) {
-        if (type == String.class) return raw;
-        if (type == int.class) return raw == null || raw.isEmpty() ? 0 : Integer.parseInt(raw);
-        if (type == Integer.class) return raw == null || raw.isEmpty() ? null : Integer.valueOf(raw);
-        if (type == long.class) return raw == null || raw.isEmpty() ? 0L : Long.parseLong(raw);
-        if (type == Long.class) return raw == null || raw.isEmpty() ? null : Long.valueOf(raw);
-        if (type == double.class) return raw == null || raw.isEmpty() ? 0d : Double.parseDouble(raw);
-        if (type == Double.class) return raw == null || raw.isEmpty() ? null : Double.valueOf(raw);
-        if (type == boolean.class) return raw != null && ("true".equalsIgnoreCase(raw) || "1".equals(raw));
-        if (type == Boolean.class) return raw == null ? null : ("true".equalsIgnoreCase(raw) || "1".equals(raw));
+    /**
+     * Convertit une chaîne brute vers le type cible
+     * @param rawValue La valeur brute à convertir
+     * @param targetType Le type de destination
+     * @return La valeur convertie ou null si incompatible
+     */
+    private Object convertSimple(String rawValue, Class<?> targetType) {
+        // Gestion des types numériques et booléens
+        if (targetType == String.class) return rawValue;
+        
+        if (rawValue == null || rawValue.isEmpty()) {
+            // Valeurs par défaut pour les types primitifs
+            if (targetType == int.class) return 0;
+            if (targetType == long.class) return 0L;
+            if (targetType == double.class) return 0.0;
+            if (targetType == boolean.class) return false;
+            // Retourner null pour les types objets
+            return null;
+        }
+        
+        // Conversions explicites
+        try {
+            if (targetType == int.class || targetType == Integer.class) {
+                return Integer.parseInt(rawValue);
+            }
+            if (targetType == long.class || targetType == Long.class) {
+                return Long.parseLong(rawValue);
+            }
+            if (targetType == double.class || targetType == Double.class) {
+                return Double.parseDouble(rawValue);
+            }
+            if (targetType == boolean.class || targetType == Boolean.class) {
+                return "true".equalsIgnoreCase(rawValue) || "1".equals(rawValue);
+            }
+        } catch (NumberFormatException e) {
+            // En cas d'erreur de conversion, retourner null
+            return null;
+        }
+        
+        // Type non supporté
         return null;
     }
 }

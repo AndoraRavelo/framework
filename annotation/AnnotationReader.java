@@ -1,14 +1,14 @@
-package annotation;
+package framework.annotation;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 // Utilitaires déplacés
-import utilitaire.ConfigLoader;
-import utilitaire.ClassScanner;
-import utilitaire.UrlMappingRegistry;
-import utilitaire.MappingInfo;
+import framework.utilitaire.ConfigLoader;
+import framework.utilitaire.ClassScanner;
+import framework.utilitaire.UrlMappingRegistry;
+import framework.utilitaire.MappingInfo;
 
 /**
  * Service principal pour la gestion des annotations

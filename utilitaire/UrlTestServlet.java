@@ -1,7 +1,7 @@
-package utilitaire;
+package framework.utilitaire;
 
-import annotation.AnnotationReader;
-import utilitaire.MappingInfo;
+import framework.annotation.AnnotationReader;
+import framework.utilitaire.MappingInfo;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
