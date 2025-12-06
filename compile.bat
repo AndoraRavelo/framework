@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 set "PROJECT_ROOT=%CD%"
-set "JAR_NAME=framework.jar"
+set "JAR_NAME=jar"
 set "FRAMEWORK_SRC=%PROJECT_ROOT%\main\java"
 set "TARGET_LIB=%PROJECT_ROOT%\..\test\WEB-INF\lib"
 set "BUILD_DIR=%PROJECT_ROOT%\build"
