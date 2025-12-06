@@ -26,7 +26,27 @@ public class FrontServlet extends HttpServlet {
         AnnotationReader.init();
 
         // Essayer de retrouver un mapping pour la ressource demandée
-        MappingInfo mapping = AnnotationReader.findMappingByUrl(resourcePath);
+        MappingInfo mapping = AnnotationReader.findMappingByUrl(resourcePath, req.getMethod());
+        if (mapping == null) mapping = new MappingInfo();
+
+        if (mapping.isMethodNotAllowed()) {
+            // Return 405 Method Not Allowed with Allow header and a friendly HTML page
+            resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+            java.util.Set<String> allowed = mapping.getAllowedMethods();
+            String allowHeader = String.join(", ", allowed);
+            resp.setHeader("Allow", allowHeader);
+            resp.setContentType("text/html; charset=UTF-8");
+            java.io.PrintWriter out = resp.getWriter();
+            out.println("<html><head><meta charset='UTF-8'><title>405 - Method Not Allowed</title>"
+                    + "<style>body{font-family:Arial, sans-serif;padding:32px;color:#333} h1{color:#b00020}</style></head><body>");
+            out.println("<h1>405 - Method Not Allowed</h1>");
+            out.println("<p>The requested URL <code>" + resourcePath + "</code> exists but the HTTP method <strong>" + req.getMethod() + "</strong> is not allowed.</p>");
+            out.println("<p>Allowed methods: <code>" + allowHeader + "</code></p>");
+            out.println("<p><a href='" + req.getContextPath() + "'>Return to application root</a></p>");
+            out.println("</body></html>");
+            return;
+        }
+
         if (mapping.isFound()) {
             try {
                 Class<?> controller = mapping.getControllerClass();
@@ -42,21 +62,27 @@ public class FrontServlet extends HttpServlet {
                     if (type == HttpServletRequest.class) { args[i] = req; continue; }
                     if (type == HttpServletResponse.class) { args[i] = resp; continue; }
 
-                    RequestParam rp = parameters[i].getAnnotation(RequestParam.class);
-                    if (rp != null) {
-                        String paramName = rp.value();
-                        // Strict rule: annotation value must be present and equal to the Java parameter name
-                        if (paramName == null || paramName.isEmpty()) {
+                    // PathVariable binding
+                    PathVariable pv = parameters[i].getAnnotation(PathVariable.class);
+                    if (pv != null) {
+                        String varName = pv.value();
+                        String val = mapping.getPathVariables().get(varName);
+                        if (val == null) {
                             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                             resp.setContentType("text/plain; charset=UTF-8");
-                            resp.getWriter().println("@RequestParam value must not be empty for parameter '" + parameters[i].getName() + "'");
+                            resp.getWriter().println("Missing path variable: " + varName);
                             return;
                         }
-                        if (!parameters[i].getName().equals(paramName)) {
-                            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                            resp.setContentType("text/plain; charset=UTF-8");
-                            resp.getWriter().println("@RequestParam name mismatch: expected Java parameter name '" + parameters[i].getName() + "' to equal annotation value '" + paramName + "'");
-                            return;
+                        args[i] = convertSimple(val, type);
+                        continue;
+                    }
+
+                        RequestParam rp = parameters[i].getAnnotation(RequestParam.class);
+                    if (rp != null) {
+                        String paramName = rp.value();
+                        if (paramName == null || paramName.isEmpty()) {
+                            // If not provided, fallback to Java parameter name (requires -parameters)
+                            paramName = parameters[i].getName();
                         }
                         String raw = req.getParameter(paramName);
                         if (raw == null) {
@@ -203,46 +229,16 @@ public class FrontServlet extends HttpServlet {
         out.println("</body></html>");
     }
 
-    /**
-     * Convertit une chaîne brute vers le type cible
-     * @param rawValue La valeur brute à convertir
-     * @param targetType Le type de destination
-     * @return La valeur convertie ou null si incompatible
-     */
-    private Object convertSimple(String rawValue, Class<?> targetType) {
-        // Gestion des types numériques et booléens
-        if (targetType == String.class) return rawValue;
-        
-        if (rawValue == null || rawValue.isEmpty()) {
-            // Valeurs par défaut pour les types primitifs
-            if (targetType == int.class) return 0;
-            if (targetType == long.class) return 0L;
-            if (targetType == double.class) return 0.0;
-            if (targetType == boolean.class) return false;
-            // Retourner null pour les types objets
-            return null;
-        }
-        
-        // Conversions explicites
-        try {
-            if (targetType == int.class || targetType == Integer.class) {
-                return Integer.parseInt(rawValue);
-            }
-            if (targetType == long.class || targetType == Long.class) {
-                return Long.parseLong(rawValue);
-            }
-            if (targetType == double.class || targetType == Double.class) {
-                return Double.parseDouble(rawValue);
-            }
-            if (targetType == boolean.class || targetType == Boolean.class) {
-                return "true".equalsIgnoreCase(rawValue) || "1".equals(rawValue);
-            }
-        } catch (NumberFormatException e) {
-            // En cas d'erreur de conversion, retourner null
-            return null;
-        }
-        
-        // Type non supporté
+    private Object convertSimple(String raw, Class<?> type) {
+        if (type == String.class) return raw;
+        if (type == int.class) return raw == null || raw.isEmpty() ? 0 : Integer.parseInt(raw);
+        if (type == Integer.class) return raw == null || raw.isEmpty() ? null : Integer.valueOf(raw);
+        if (type == long.class) return raw == null || raw.isEmpty() ? 0L : Long.parseLong(raw);
+        if (type == Long.class) return raw == null || raw.isEmpty() ? null : Long.valueOf(raw);
+        if (type == double.class) return raw == null || raw.isEmpty() ? 0d : Double.parseDouble(raw);
+        if (type == Double.class) return raw == null || raw.isEmpty() ? null : Double.valueOf(raw);
+        if (type == boolean.class) return raw != null && ("true".equalsIgnoreCase(raw) || "1".equals(raw));
+        if (type == Boolean.class) return raw == null ? null : ("true".equalsIgnoreCase(raw) || "1".equals(raw));
         return null;
     }
 }
