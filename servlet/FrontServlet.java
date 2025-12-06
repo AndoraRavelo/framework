@@ -1,16 +1,16 @@
-package framework.servlet;
+package servlet;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
-import framework.annotation.AnnotationReader;
-import framework.annotation.RequestParam;
-import framework.utilitaire.MappingInfo;
-import framework.utilitaire.ConfigLoader;
-import framework.utilitaire.MethodInvoker;
-import framework.utilitaire.ModelAndView;
+import annotation.AnnotationReader;
+import annotation.RequestParam;
+import utilitaire.MappingInfo;
+import utilitaire.ConfigLoader;
+import utilitaire.MethodInvoker;
+import utilitaire.ModelAndView;
 
 public class FrontServlet extends HttpServlet {
 
